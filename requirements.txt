@@ -8,3 +8,4 @@ ultralytics
 face-recognition
 Pillow
 gunicorn
+python-3.10.13
