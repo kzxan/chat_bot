@@ -2,14 +2,18 @@ from twilio.rest import Client
 import cv2
 import datetime
 import os
+from dotenv import load_dotenv  # .env файлын оқу үшін
+
+# .env файлынан кілттерді жүктеу
+load_dotenv()
 
 class WhatsAppAlert:
     def __init__(self):
-        # ✅ Twilio мәліметтері — өзіңіздікін енгізіңіз
-        self.account_sid = ""
-        self.auth_token  = ""
-        self.from_number = "whatsapp:"  # Twilio номері
-        self.to_number   = "whatsapp:"  # Сіздің нөміріңіз
+        # Енді тырнақша ішіне ештеңе жазбаймыз — .env-тен автоматты алады
+        self.account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        self.auth_token  = os.getenv("TWILIO_AUTH_TOKEN")
+        self.from_number = os.getenv("TWILIO_FROM_NUMBER")
+        self.to_number   = os.getenv("TWILIO_TO_NUMBER")
 
         self.client = Client(self.account_sid, self.auth_token)
         self.last_sent = {}
@@ -22,7 +26,7 @@ class WhatsAppAlert:
     def send(self, alert_type, message, frame):
         now = datetime.datetime.now()
 
-        # Cooldown тексеру
+        # Cooldown тексеру — бір минутта бір рет жіберу
         if alert_type in self.last_sent:
             diff = (now - self.last_sent[alert_type]).seconds
             if diff < self.cooldown:
@@ -30,9 +34,9 @@ class WhatsAppAlert:
 
         self.last_sent[alert_type] = now
         timestamp = now.strftime('%Y%m%d_%H%M%S')
-        time_str = now.strftime('%H:%M:%S')
+        time_str  = now.strftime('%H:%M:%S')
 
-        # Скрин сақтау
+        # Скриншот сақтау
         if alert_type == "ҚАРУ":
             path = f"alerts/қару/{timestamp}.jpg"
         else:

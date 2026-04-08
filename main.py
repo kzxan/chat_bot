@@ -1,20 +1,27 @@
 import cv2
+import os
+from dotenv import load_dotenv  # .env файлын оқу үшін
 from person_counter import PersonCounter
 from weapon_detector import WeaponDetector
 from face_recognizer import FaceRecognizer
 from whatsapp_alert import WhatsAppAlert
 from text_helper import put_kazakh_text
 
-SOURCE = "http://192.168.43.1:8080/video"
-MAX_PERSONS = 10
+# .env файлынан мәндерді жүктеу — барлық нәрседен бұрын
+load_dotenv()
+
+# Камера мекенжайы мен шекті санды .env-тен алу,
+# егер .env-те жоқ болса, default мән қолданылады
+SOURCE      = os.getenv("CAMERA_SOURCE", "http://192.168.43.1:8080/video")
+MAX_PERSONS = int(os.getenv("MAX_PERSONS", 10))
 
 def main():
     cap = cv2.VideoCapture(SOURCE)
 
-    counter   = PersonCounter()
+    counter    = PersonCounter()
     weapon_det = WeaponDetector()
-    face_rec  = FaceRecognizer("known_faces")
-    alert     = WhatsAppAlert()  # ✅ WhatsApp жүйесі
+    face_rec   = FaceRecognizer("known_faces")
+    alert      = WhatsAppAlert()  # WhatsApp кілттерін .env-тен алады
 
     print("✅ Жүйе іске қосылды...")
 
@@ -33,7 +40,7 @@ def main():
         # 3. Бет тану
         frame, unknown_found = face_rec.recognize(frame)
 
-        # 4. Сигналдар — WhatsApp
+        # 4. Қажет болса WhatsApp дабыл жіберу
         if weapon_found:
             alert.send("ҚАРУ", "Қару-жарақ анықталды!", frame)
 
@@ -43,7 +50,7 @@ def main():
         if person_count > MAX_PERSONS:
             alert.send("АДАМ КӨП", f"Адам саны: {person_count}/{MAX_PERSONS}", frame)
 
-        # 5. Экранға шығару
+        # 5. Экранға мәтін шығару
         color = (0, 0, 255) if person_count > MAX_PERSONS else (0, 255, 0)
         frame = put_kazakh_text(frame,
                                 f"Адам саны: {person_count}/{MAX_PERSONS}",
@@ -66,4 +73,4 @@ def main():
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    main()  
+    main()
