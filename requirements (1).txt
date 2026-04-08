@@ -1,0 +1,9 @@
+flask
+twilio
+anthropic
+requests
+numpy
+opencv-python
+ultralytics
+face-recognition
+Pillow
